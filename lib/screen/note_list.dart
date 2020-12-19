@@ -1,0 +1,258 @@
+import 'dart:convert';
+import 'package:image/image.dart' as ImageProcess;
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:doannote/database/databaseapp.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:doannote/entities/note.dart';
+import 'package:doannote/screen/note_detail.dart';
+import 'dart:async';
+
+import 'color_pick.dart';
+
+class NoteList extends StatefulWidget {
+  @override
+  _NoteListState createState() => _NoteListState();
+}
+
+class _NoteListState extends State<NoteList> {
+  Databaseapp databaseapp = Databaseapp();
+  List<Note> noteList;
+  Uint8List test;
+  //int itemCount;
+  @override
+  Widget build(BuildContext context) {
+    if (this.noteList == null) {
+      this.noteList = new List<Note>();
+      getAllNote();
+      print('hello test');
+    }
+    return Scaffold(
+      body: SafeArea(
+        child: this.noteList.length == 0
+            ? Container(
+                color: Colors.white,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(
+                      'Click on the add button to add a new note!',
+                      style: TextStyle(
+                        fontFamily: 'Sans',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : Container(
+                color: Colors.white,
+                child: getNotesList(),
+              ),
+        // child: Container(
+        //   child: getNotesList(),
+        // ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          //print('ham on tap');
+          moveToNodeDetail(Note('', '', '', 0, ''));
+        },
+        child: Icon(
+          Icons.add,
+          color: Colors.black87,
+        ),
+        tooltip: 'Add Note',
+        shape: CircleBorder(
+          side: BorderSide(
+            color: Colors.black87,
+            width: 2.0,
+          ),
+        ),
+        backgroundColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget getNotesList() {
+    return StaggeredGridView.countBuilder(
+      //padding: EdgeInsets.all(10),
+      physics: BouncingScrollPhysics(),
+      crossAxisCount: 4,
+      itemCount: this.noteList.length,
+      itemBuilder: (BuildContext context, int index) => GestureDetector(
+        onTap: () {
+          moveToNodeDetail(this.noteList[index]);
+        },
+        onLongPress: () {
+          _showDialog(this.noteList[index].id);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: new Container(
+            //padding: EdgeInsets.all(8),
+            //color: Colors.green,
+            decoration: BoxDecoration(
+              color: colors[this.noteList[index].color],
+              border: Border.all(width: 2.0, color: Colors.black),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (this.noteList[index].pathimage != '')
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(5),
+                      topRight: Radius.circular(5),
+                    ),
+                    child: Image.network(
+                      //Base64Decoder().convert(this.noteList[index].pathimage),
+                      'https://gamek.mediacdn.vn/thumb_w/690/2019/7/8/1-15625474669018688730.jpg',
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          noteList[index].title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Sans',
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                //),
+                Container(
+                  color: Colors.black,
+                  height: 1,
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          this.noteList[index].description,
+                          maxLines: 6,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Sans',
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8, bottom: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        this.noteList[index].date,
+                        style: TextStyle(
+                            fontFamily: 'Sans',
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black,
+                            fontSize: 14),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+            // child: new Center(
+            //   child: new CircleAvatar(
+            //     backgroundColor: Colors.white,
+            //     child: Text('$index'),
+            //   ),
+            // ),
+          ),
+        ),
+      ),
+      staggeredTileBuilder: (int index) => new StaggeredTile.fit(2),
+      mainAxisSpacing: 4.0,
+      crossAxisSpacing: 4.0,
+    );
+  }
+
+  void moveToNodeDetail(Note note) async {
+    await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => NoteDetail(note)));
+    //print('kool');
+    getAllNote();
+    //print('asd');
+  }
+
+  void _showDialog(int id) {
+    // flutter defined function
+    showDialog(
+      context: this.context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          title: new Text("Delete Note?"),
+          content: new Text("Alert Dialog body"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("Yes"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                delete(id);
+              },
+            ),
+            new FlatButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: new Text('No'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void delete(int id) async {
+    await databaseapp.deleteNote(id);
+    getAllNote();
+  }
+
+  void getAllNote() async {
+    List<Note> notelist = await databaseapp.getNoteList();
+    //await databaseapp.database;
+    setState(() {
+      this.noteList = notelist;
+    });
+    //print(this.noteList);
+    // Future<List<Note>> listNote =
+    //     (await databaseapp.getNoteList()) as Future<List<Note>>;
+    // setState(() {
+    //   this.noteList = listNote as List<Note>;
+    // });
+  }
+}
