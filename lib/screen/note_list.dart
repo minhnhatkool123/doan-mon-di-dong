@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:doannote/screen/note_serach.dart';
 import 'package:image/image.dart' as ImageProcess;
 import 'dart:io';
 import 'dart:typed_data';
@@ -30,7 +31,37 @@ class _NoteListState extends State<NoteList> {
       getAllNote();
       print('hello test');
     }
+
+    Widget myAppBar() {
+      return AppBar(
+        title: Text(
+          'App Note',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: noteList.length == 0
+            ? Container()
+            : IconButton(
+                icon: Icon(
+                  Icons.search,
+                  color: Colors.black,
+                ),
+                onPressed: () async {
+                  final Note result = await showSearch(
+                      context: context, delegate: NoteSearch(notes: noteList));
+                  if (result != null) moveToNodeDetail(result);
+                },
+              ),
+      );
+    }
+
     return Scaffold(
+      appBar: myAppBar(),
       body: SafeArea(
         child: this.noteList.length == 0
             ? Container(
@@ -111,9 +142,9 @@ class _NoteListState extends State<NoteList> {
                       topLeft: Radius.circular(5),
                       topRight: Radius.circular(5),
                     ),
-                    child: Image.network(
-                      //Base64Decoder().convert(this.noteList[index].pathimage),
-                      'https://gamek.mediacdn.vn/thumb_w/690/2019/7/8/1-15625474669018688730.jpg',
+                    child: Image.memory(
+                      Base64Decoder().convert(this.noteList[index].pathimage),
+                      //'https://gamek.mediacdn.vn/thumb_w/690/2019/7/8/1-15625474669018688730.jpg',
                       fit: BoxFit.fill,
                     ),
                   ),
@@ -215,11 +246,20 @@ class _NoteListState extends State<NoteList> {
         return AlertDialog(
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(10.0))),
-          title: new Text("Delete Note?"),
-          content: new Text("Alert Dialog body"),
+          title: new Text(
+            "Delete Note?",
+            style: TextStyle(color: Colors.black),
+          ),
+          content: new Text(
+            "Are you sure you want to delete this note",
+            style: TextStyle(color: Colors.black),
+          ),
           actions: <Widget>[
             new FlatButton(
-              child: new Text("Yes"),
+              child: new Text(
+                "Yes",
+                style: TextStyle(color: Colors.black),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
                 delete(id);
@@ -229,7 +269,10 @@ class _NoteListState extends State<NoteList> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: new Text('No'),
+              child: new Text(
+                'No',
+                style: TextStyle(color: Colors.black),
+              ),
             ),
           ],
         );

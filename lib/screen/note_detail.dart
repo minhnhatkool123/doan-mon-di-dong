@@ -60,7 +60,7 @@ class _NoteDetailState extends State<NoteDetail> {
         elevation: 0.0,
         title: Center(
           child: Text(
-            'Ghi Chú',
+            'Note',
             style: Theme.of(context).textTheme.headline5,
           ),
         ),
@@ -145,7 +145,6 @@ class _NoteDetailState extends State<NoteDetail> {
                   ],
                 ),
               ),
-              //if (valueSwicth)
               PopupMenuItem(
                 value: 2,
                 child: Row(
@@ -163,7 +162,7 @@ class _NoteDetailState extends State<NoteDetail> {
                 ),
               )
             ],
-            initialValue: 2,
+            initialValue: 0,
             onCanceled: () {},
             onSelected: (value) {
               if (value == 1)
@@ -176,15 +175,7 @@ class _NoteDetailState extends State<NoteDetail> {
               Icons.more_vert,
               color: Colors.black,
             ),
-            //elevation: 4,
-          )
-          // IconButton(
-          //   icon: Icon(
-          //     Icons.more_vert,
-          //     color: Colors.black,
-          //   ),
-          //   onPressed: null,
-          // )
+          ),
         ],
       ),
       body: Container(
